@@ -65,8 +65,8 @@ export class MisDatosComponent implements OnInit {
         // Actualizar usuario existente
         this.dbService.updateUser(
           this.userData.id,          // ID del usuario
-          this.userData.username,     // Username del usuario (debe estar definido en userData)
-          this.userData.password,     // Password del usuario (debe estar definido en userData)
+          this.userData.username,     // Username del usuario 
+          this.userData.password,     // Password del usuario 
           formData.nombre,            // Nuevo nombre
           formData.apellidos,         // Nuevos apellidos
           formData.email,             // Nuevo email
@@ -78,7 +78,7 @@ export class MisDatosComponent implements OnInit {
           this.selectedUserId = null;
         }).catch(error => console.error('Error actualizando datos del usuario', error));
       } else {
-        // Crear nuevo usuario si no existe userData
+        // Crear nuevo usuario si no existe userData para poder entrar al sistema
         this.dbService.addUser(
           'usuario_actual',           // Username predeterminado
           'contraseña_predeterminada', // Password predeterminado
@@ -93,10 +93,10 @@ export class MisDatosComponent implements OnInit {
     }
   }
 
-  // Seleccionar usuario para editar y cargar datos en el formulario
+  // Selecciona usuario para editar y cargar datos en el formulario
   onEdit(user: any) {
     this.selectedUserId = user.id;
-    this.userData = user; // Guardar datos completos del usuario seleccionado
+    this.userData = user; // Guarda datos completos del usuario seleccionado
     this.userForm.patchValue({
       nombre: user.nombre,
       apellidos: user.apellidos,
@@ -105,7 +105,7 @@ export class MisDatosComponent implements OnInit {
     });
   }
 
-  // Eliminar usuario con confirmación
+  // Elimina usuario con confirmación
   onDelete(userId: number) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '250px',
@@ -115,7 +115,7 @@ export class MisDatosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.dbService.deleteUser(userId).then(() => {
-          this.loadDatosUsuario(); // Recargar la lista de usuarios después de eliminar
+          this.loadDatosUsuario(); // Recarga la lista de usuarios después de eliminar
         }).catch(error => console.error('Error eliminando usuario', error));
       }
     });

@@ -46,20 +46,20 @@ export class CertificacionesComponent {
           formValues.nombre,
           formValues.ano
         ).then(() => {
-          this.loadCertificaciones(); // Recargar certificaciones después de actualizar
+          this.loadCertificaciones(); // Recarga listado de certificaciones después de actualizar
           this.certificacionForm.reset();
           this.selectedCertificacionId = null;
         }).catch(error => {
           console.error('Error actualizando certificación', error);
         });
       } else {
-        // Agregar nueva certificación
+        // Agrega nueva certificación
         this.dbService.addCertificacion(
           formValues.nombre,
           formValues.ano
         ).then(() => {
           this.certificacionForm.reset();
-          this.loadCertificaciones(); // Recargar certificaciones después de agregar
+          this.loadCertificaciones(); // Recarga listado de certificaciones después de agregar
         }).catch(error => {
           console.error('Error al agregar certificación', error);
         });
@@ -69,7 +69,7 @@ export class CertificacionesComponent {
     }
   }
 
-  // Seleccionar certificación para editar
+  // Selecciona certificación para editar
   onEdit(certificacion: any) {
     this.selectedCertificacionId = certificacion.id;
     this.certificacionForm.patchValue({
@@ -88,7 +88,7 @@ export class CertificacionesComponent {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.dbService.deleteCertificacion(id).then(() => {
-          this.loadCertificaciones(); // Recargar certificaciones después de eliminar
+          this.loadCertificaciones(); // Recarga certificaciones después de eliminar
         }).catch(error => {
           console.error('Error al eliminar certificación', error);
         });

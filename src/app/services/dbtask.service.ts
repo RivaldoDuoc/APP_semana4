@@ -8,8 +8,13 @@ import { Storage } from '@ionic/storage-angular';
   providedIn: 'root'
 })
 export class DBTaskService {
+  // Instancia de la base de datos SQLite
   private dbInstance: SQLiteObject | undefined;
+
+  // Estado de la base de datos para indicar si está lista para su uso
   private isDbReady = new BehaviorSubject<boolean>(false);
+
+  // Listas reactivas para usuarios, experiencias y certificaciones
   usersList = new BehaviorSubject<any[]>([]);
   experienciasList = new BehaviorSubject<any[]>([]);
   certificacionesList = new BehaviorSubject<any[]>([]);
@@ -19,26 +24,30 @@ export class DBTaskService {
     private platform: Platform,
     private storage: Storage
   ) {
+    // Espera a que la plataforma esté lista antes de inicializar SQLite y el almacenamiento
     this.platform.ready().then(() => {
+      // Inicializa la base de datos SQLite
       this.sqlite.create({
         name: 'skeletonapp.db',
         location: 'default'
       }).then((db: SQLiteObject) => {
         this.dbInstance = db;
-        this.createTables(); // Crear las tablas al inicializar la base de datos
+        this.createTables(); // Llama a createTables para crear las tablas necesarias
       });
-      this.storage.create(); // Inicializar almacenamiento para la sesión de usuario
+      
+      // Inicializa el almacenamiento para gestionar la sesión del usuario
+      this.storage.create();
     });
   }
 
-  // Crear las tablas necesarias en la base de datos
+  // Crea las tablas necesarias en la base de datos
   private createTables() {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
       return;
     }
 
-    // Tabla para usuarios
+    // Crea la tabla para usuarios con campos como username, password, nombre, etc.
     this.dbInstance.executeSql(`
       CREATE TABLE IF NOT EXISTS sesion_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,10 +59,10 @@ export class DBTaskService {
         edad INTEGER,
         active INTEGER
       );`, [])
-      .then(() => this.isDbReady.next(true))
+      .then(() => this.isDbReady.next(true)) // Marca la base de datos como lista
       .catch(e => console.error('Error creando tabla sesion_data', e));
 
-    // Tabla para experiencia laboral
+    // Crea la tabla para experiencia laboral
     this.dbInstance.executeSql(`
       CREATE TABLE IF NOT EXISTS experiencia_laboral (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +75,7 @@ export class DBTaskService {
       .then(() => this.isDbReady.next(true))
       .catch(e => console.error('Error creando tabla experiencia_laboral', e));
 
-    // Tabla para certificaciones
+    // Crea la tabla para certificaciones
     this.dbInstance.executeSql(`
       CREATE TABLE IF NOT EXISTS certificaciones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,6 +87,8 @@ export class DBTaskService {
   }
 
   // CRUD para Usuarios
+
+  // Agrega un usuario nuevo a la base de datos
   addUser(username: string, password: string, active: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -88,14 +99,15 @@ export class DBTaskService {
       `INSERT INTO sesion_data (username, password, nombre, apellidos, email, edad, active) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       data
     ).then(() => {
-      this.loadUsers();
-      console.log('Usuario creado correctamente:', data); // para ver si el usuario se creó correctamente y almacena en BD
+      this.loadUsers(); // Recarga la lista de usuarios después de agregar uno nuevo
+      console.log('Usuario creado correctamente:', data);
     }).catch(e => {
       console.error('Error al agregar usuario', e);
       throw e;
     });
   }
 
+  // Obtiene todos los usuarios de la base de datos
   getAllUsers(): Promise<any[]> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -104,7 +116,7 @@ export class DBTaskService {
     return this.dbInstance.executeSql(`SELECT * FROM sesion_data`, []).then(res => {
       let users: any[] = [];
       for (let i = 0; i < res.rows.length; i++) {
-        users.push(res.rows.item(i));
+        users.push(res.rows.item(i)); // Guarda cada usuario en el array
       }
       return users;
     }).catch(e => {
@@ -113,6 +125,7 @@ export class DBTaskService {
     });
   }
 
+  // Actualiza un usuario específico en la base de datos
   updateUser(id: number, username: string, password: string, nombre: string, apellidos: string, email: string, edad: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -123,13 +136,14 @@ export class DBTaskService {
       `UPDATE sesion_data SET username = ?, password = ?, nombre = ?, apellidos = ?, email = ?, edad = ? WHERE id = ?`,
       data
     ).then(() => {
-      this.loadUsers();
+      this.loadUsers(); // Recarga la lista de usuarios después de la actualización
     }).catch(e => {
       console.error('Error actualizando usuario', e);
       throw e;
     });
   }
 
+  // Elimina un usuario específico de la base de datos
   deleteUser(id: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -139,24 +153,28 @@ export class DBTaskService {
       `DELETE FROM sesion_data WHERE id = ?`,
       [id]
     ).then(() => {
-      this.loadUsers();
+      this.loadUsers(); // Recarga la lista de usuarios después de eliminar uno
     }).catch(e => {
       console.error('Error eliminando usuario', e);
       throw e;
     });
   }
 
+  // Recarga y emite la lista de usuarios actuales
   private loadUsers() {
     this.getAllUsers().then(users => {
-      this.usersList.next(users);
+      this.usersList.next(users); // Emite la nueva lista a los suscriptores
     });
   }
 
+  // Permite suscribirse a la lista de usuarios actualizada
   getUsers(): Observable<any[]> {
     return this.usersList.asObservable();
   }
 
   // CRUD para Experiencia Laboral
+
+  // Agrega una nueva experiencia laboral
   addExperiencia(empresa: string, ano_inicio: number, cargo: string, ano_termino: number | null, actual: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -166,13 +184,14 @@ export class DBTaskService {
     return this.dbInstance.executeSql(
       `INSERT INTO experiencia_laboral (empresa, ano_inicio, cargo, ano_termino, actual) VALUES (?, ?, ?, ?, ?)`,
       data
-    ).then(() => this.loadExperiencias())
+    ).then(() => this.loadExperiencias()) // Recarga la lista después de agregar una experiencia
       .catch(e => {
         console.error('Error agregando experiencia laboral', e);
         throw e;
       });
   }
 
+  // Obtiene todas las experiencias laborales
   getAllExperiencia(): Promise<any[]> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -190,6 +209,7 @@ export class DBTaskService {
     });
   }
 
+  // Recarga y emite la lista de experiencias laborales
   private loadExperiencias() {
     this.getAllExperiencia().then(items => {
       this.experienciasList.next(items);
@@ -201,6 +221,8 @@ export class DBTaskService {
   }
 
   // CRUD para Certificaciones
+
+  // Agrega una nueva certificación
   addCertificacion(nombre: string, ano: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -217,6 +239,7 @@ export class DBTaskService {
       });
   }
 
+  // Obtiene todas las certificaciones
   getAllCertificaciones(): Promise<any[]> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -234,6 +257,7 @@ export class DBTaskService {
     });
   }
 
+  // Recarga y emite la lista de certificaciones
   private loadCertificaciones() {
     this.getAllCertificaciones().then(items => {
       this.certificacionesList.next(items);
@@ -245,21 +269,25 @@ export class DBTaskService {
   }
 
   // Funciones de sesión
+
+  // Guarda la sesión del usuario en el almacenamiento local
   async setSession(username: string, password: string) {
     await this.storage.set('username', username);
     await this.storage.set('password', password);
     await this.storage.set('active', 1);
   }
 
+  // Limpia los datos de la sesión del usuario
   async clearSession() {
     await this.storage.clear();
   }
 
+  // Verifica si el usuario tiene una sesión activa
   async isUserLoggedIn(): Promise<boolean> {
     return (await this.storage.get('active')) === 1;
   }
 
-  // Método para obtener un usuario específico por username
+  // Obtiene un usuario específico por su nombre de usuario
   getUser(username: string): Promise<any> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -268,9 +296,9 @@ export class DBTaskService {
     return this.dbInstance.executeSql(`SELECT * FROM sesion_data WHERE username = ?`, [username])
       .then(res => {
         if (res.rows.length > 0) {
-          return res.rows.item(0); // Retorna el primer resultado encontrado
+          return res.rows.item(0);
         }
-        return null; // Retorna null si no encuentra el usuario
+        return null;
       })
       .catch(e => {
         console.error('Error obteniendo usuario', e);
@@ -312,9 +340,7 @@ export class DBTaskService {
     });
   }
 
-  // En el servicio dbtask.service.ts
-
-  // Método para guardar los datos de "Mis Datos"
+  // Guarda los datos de "Mis Datos" en la base de datos
   addUserProfile(nombre: string, apellidos: string, edad: number, email: string): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -332,7 +358,7 @@ export class DBTaskService {
     });
   }
 
-  // Método para obtener los datos de "Mis Datos"
+  // Obtiene los datos de "Mis Datos" desde la base de datos
   getUserProfile(): Promise<any> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -341,9 +367,9 @@ export class DBTaskService {
     return this.dbInstance.executeSql(`SELECT nombre, apellidos, edad, email FROM sesion_data LIMIT 1`, [])
       .then(res => {
         if (res.rows.length > 0) {
-          return res.rows.item(0); // Retorna el primer resultado encontrado
+          return res.rows.item(0);
         }
-        return null; // Retorna null si no encuentra datos
+        return null;
       })
       .catch(e => {
         console.error('Error obteniendo los datos de usuario', e);
@@ -351,7 +377,7 @@ export class DBTaskService {
       });
   }
 
-  // Método para actualizar los datos de "Mis Datos"
+  // Actualiza los datos de "Mis Datos" en la base de datos
   updateUserProfile(nombre: string, apellidos: string, edad: number, email: string): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -368,7 +394,8 @@ export class DBTaskService {
       throw e;
     });
   }
-  // Método para actualizar una experiencia laboral por ID
+
+  // Actualiza una experiencia laboral específica por ID
   updateExperiencia(id: number, empresa: string, ano_inicio: number, cargo: string, ano_termino: number | null, actual: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -379,14 +406,14 @@ export class DBTaskService {
       `UPDATE experiencia_laboral SET empresa = ?, ano_inicio = ?, cargo = ?, ano_termino = ?, actual = ? WHERE id = ?`,
       data
     ).then(() => {
-      this.loadExperiencias(); // Recargar la lista de experiencias después de actualizar una
+      this.loadExperiencias();
     }).catch(e => {
       console.error('Error actualizando experiencia laboral', e);
       throw e;
     });
   }
 
-  // Método para actualizar una certificación por ID
+  // Actualiza una certificación específica por ID
   updateCertificacion(id: number, nombre: string, ano: number): Promise<void> {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
@@ -397,13 +424,10 @@ export class DBTaskService {
       `UPDATE certificaciones SET nombre = ?, ano = ? WHERE id = ?`,
       data
     ).then(() => {
-      this.loadCertificaciones(); // Recargar la lista de certificaciones después de actualizar una
+      this.loadCertificaciones();
     }).catch(e => {
       console.error('Error actualizando certificación', e);
       throw e;
     });
   }
-
-  
-  
 }

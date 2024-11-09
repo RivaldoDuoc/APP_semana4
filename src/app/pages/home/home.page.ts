@@ -6,11 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage {
-  selectedSegment: string = 'experiencia'; // Segmento seleccionado inicialmente
+  selectedSegment: string = 'experiencia'; // Segmento seleccionado inicial
 
   constructor() {}
 
-  // Cambia el segmento según el botón seleccionado
+  // Cambiar al segmento seleccionado por el usuario
   segmentChanged(event: any) {
     this.selectedSegment = event.detail.value;
   }
