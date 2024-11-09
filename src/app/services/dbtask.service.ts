@@ -89,6 +89,7 @@ export class DBTaskService {
       data
     ).then(() => {
       this.loadUsers();
+      console.log('Usuario creado correctamente:', data); // para ver si el usuario se creó correctamente y almacena en BD
     }).catch(e => {
       console.error('Error al agregar usuario', e);
       throw e;
@@ -310,4 +311,64 @@ export class DBTaskService {
       throw e;
     });
   }
+
+  // En el servicio dbtask.service.ts
+
+  // Método para guardar los datos de "Mis Datos"
+  addUserProfile(nombre: string, apellidos: string, edad: number, email: string): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    const data = [nombre, apellidos, edad, email];
+    return this.dbInstance.executeSql(
+      `INSERT INTO sesion_data (nombre, apellidos, edad, email) VALUES (?, ?, ?, ?)`,
+      data
+    ).then(() => {
+      console.log('Datos de usuario guardados correctamente');
+    }).catch(e => {
+      console.error('Error guardando los datos de usuario', e);
+      throw e;
+    });
+  }
+
+  // Método para obtener los datos de "Mis Datos"
+  getUserProfile(): Promise<any> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    return this.dbInstance.executeSql(`SELECT nombre, apellidos, edad, email FROM sesion_data LIMIT 1`, [])
+      .then(res => {
+        if (res.rows.length > 0) {
+          return res.rows.item(0); // Retorna el primer resultado encontrado
+        }
+        return null; // Retorna null si no encuentra datos
+      })
+      .catch(e => {
+        console.error('Error obteniendo los datos de usuario', e);
+        throw e;
+      });
+  }
+
+  // Método para actualizar los datos de "Mis Datos"
+  updateUserProfile(nombre: string, apellidos: string, edad: number, email: string): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    const data = [nombre, apellidos, edad, email];
+    return this.dbInstance.executeSql(
+      `UPDATE sesion_data SET nombre = ?, apellidos = ?, edad = ?, email = ? WHERE id = ?`,
+      data
+    ).then(() => {
+      console.log('Datos de usuario actualizados correctamente');
+    }).catch(e => {
+      console.error('Error actualizando los datos de usuario', e);
+      throw e;
+    });
+  }
+
+
+
 }

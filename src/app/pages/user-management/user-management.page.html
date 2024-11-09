@@ -5,49 +5,90 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Formulario para crear o editar usuario -->
   <form [formGroup]="userForm" (ngSubmit)="onSave()">
-    <ion-item>
-      <ion-label position="floating">Nombre</ion-label>
-      <ion-input formControlName="nombre"></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-label position="floating">Apellidos</ion-label>
-      <ion-input formControlName="apellidos"></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-label position="floating">Correo Electrónico</ion-label>
-      <ion-input formControlName="email" type="email"></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-label position="floating">Edad</ion-label>
-      <ion-input formControlName="edad" type="number"></ion-input>
-    </ion-item>
-
+    
+    <!-- Campo Nombre de Usuario -->
     <ion-item>
       <ion-label position="floating">Nombre de Usuario</ion-label>
       <ion-input formControlName="username"></ion-input>
     </ion-item>
+    <ion-text color="danger" *ngIf="userForm.get('username')?.invalid && userForm.get('username')?.touched">
+      <p>El nombre de usuario es requerido.</p>
+    </ion-text>
 
+    <!-- Campo Contraseña -->
     <ion-item>
       <ion-label position="floating">Contraseña</ion-label>
-      <ion-input formControlName="password" type="password"></ion-input>
+      <ion-input type="password" formControlName="password"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
-      <small>La contraseña debe tener al menos 6 caracteres.</small>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+      <p>La contraseña debe tener al menos 6 caracteres.</p>
+    </ion-text>
 
+    <!-- Campo Confirmar Contraseña -->
     <ion-item>
       <ion-label position="floating">Confirmar Contraseña</ion-label>
-      <ion-input formControlName="confirmPassword" type="password"></ion-input>
+      <ion-input type="password" formControlName="confirmPassword"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.hasError('passwordsMismatch') && userForm.get('confirmPassword')?.touched">
-      <small>Las contraseñas no coinciden.</small>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.errors && userForm.errors['passwordsMismatch'] && userForm.get('confirmPassword')?.touched">
+      <p>Las contraseñas no coinciden.</p>
+    </ion-text>
+    
 
+    <!-- Campo Nombre -->
+    <ion-item>
+      <ion-label position="floating">Nombre</ion-label>
+      <ion-input formControlName="nombre"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched">
+      <p>El nombre es requerido.</p>
+    </ion-text>
+
+    <!-- Campo Apellidos -->
+    <ion-item>
+      <ion-label position="floating">Apellidos</ion-label>
+      <ion-input formControlName="apellidos"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="userForm.get('apellidos')?.invalid && userForm.get('apellidos')?.touched">
+      <p>Los apellidos son requeridos.</p>
+    </ion-text>
+
+    <!-- Campo Correo Electrónico -->
+    <ion-item>
+      <ion-label position="floating">Correo Electrónico</ion-label>
+      <ion-input type="email" formControlName="email"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+      <p>Por favor, ingresa un correo electrónico válido.</p>
+    </ion-text>
+
+    <!-- Campo Edad -->
+    <ion-item>
+      <ion-label position="floating">Edad</ion-label>
+      <ion-input type="number" formControlName="edad"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="userForm.get('edad')?.invalid && userForm.get('edad')?.touched">
+      <p>La edad debe ser un número entre 1 y 120.</p>
+    </ion-text>
+
+    <!-- Botón Guardar Cambios -->
     <ion-button expand="full" type="submit" [disabled]="userForm.invalid">Guardar Cambios</ion-button>
+    
+    <!-- Botón para cerrar sesión -->
     <ion-button expand="full" color="danger" (click)="onLogout()">Cerrar Sesión</ion-button>
+
   </form>
+
+  <!-- Listado de usuarios registrados -->
+  <ion-list *ngIf="users.length > 0">
+    <ion-item *ngFor="let user of users">
+      <ion-label>
+        <h2>{{ user.username }}</h2>
+        <p>{{ user.email }}</p>
+      </ion-label>
+      <ion-button fill="clear" (click)="onEdit(user)">Editar</ion-button>
+      <ion-button fill="clear" color="danger" (click)="onDelete(user.id)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
 </ion-content>

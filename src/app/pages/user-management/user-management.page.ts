@@ -26,7 +26,7 @@ export class UserManagementPage implements OnInit {
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      edad: ['', [Validators.required, Validators.min(1), Validators.max(120)]],
+      edad: ['', [Validators.required, Validators.min(1), Validators.max(120), Validators.pattern('^[0-9]*$')]],
     }, { validator: this.passwordsMatchValidator });
   }
 
@@ -44,6 +44,7 @@ export class UserManagementPage implements OnInit {
   // Cargar todos los usuarios desde la base de datos
   loadUsers() {
     this.dbService.getAllUsers().then(users => {
+      console.log('Usuarios en la base de datos:', users); // Esto muestra todos los usuarios en la consola
       this.users = users;
     }).catch(error => console.error('Error cargando lista de usuarios', error));
   }
@@ -87,7 +88,7 @@ export class UserManagementPage implements OnInit {
     this.userForm.patchValue({
       username: user.username,
       password: user.password,
-      confirmPassword: user.password, // Asignar password también a confirmPassword
+      confirmPassword: user.password, 
       nombre: user.nombre,
       apellidos: user.apellidos,
       email: user.email,
