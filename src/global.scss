@@ -1,0 +1,97 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+:root {
+    --background-color: #f4f4f9;
+    --primary-color: #2c3e50;
+    --secondary-color: #8e9aaf;
+    --active-color: #1e81b0;
+    --text-color: #2d2d2d;
+  }
+  
+  body, ion-content {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+  }
+  
+  ion-header, ion-toolbar {
+    background-color: var(--primary-color);
+    color: #ffffff;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin: 16px 0;
+  }
+  
+  p {
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+  
+  ion-button {
+    --background: var(--active-color);
+    --color: #ffffff;
+    --background-activated: darken(var(--active-color), 10%);
+    border-radius: 8px;
+  }
+  
+  ion-button[fill="outline"] {
+    --border-color: var(--active-color);
+    --color: var(--active-color);
+    --border-radius: 8px;
+  }
+  
+  ion-input, ion-textarea {
+    --background: #ffffff;
+    --color: var(--text-color);
+    --placeholder-color: #888888;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  ion-item {
+    --background: #ffffff;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  

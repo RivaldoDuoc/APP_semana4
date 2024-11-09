@@ -1,0 +1,35 @@
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <ion-item>
+    <ion-label position="floating">Nombre</ion-label>
+    <ion-input formControlName="nombre"></ion-input>
+  </ion-item>
+  <div *ngIf="userForm.controls['nombre'].invalid && userForm.controls['nombre'].touched">
+    <ion-text color="danger">El nombre es requerido.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Apellidos</ion-label>
+    <ion-input formControlName="apellidos"></ion-input>
+  </ion-item>
+  <div *ngIf="userForm.controls['apellidos'].invalid && userForm.controls['apellidos'].touched">
+    <ion-text color="danger">Los apellidos son requeridos.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Edad</ion-label>
+    <ion-input formControlName="edad" type="number"></ion-input>
+  </ion-item>
+  <div *ngIf="userForm.controls['edad'].invalid && userForm.controls['edad'].touched">
+    <ion-text color="danger">La edad debe ser entre 1 y 120.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Email</ion-label>
+    <ion-input formControlName="email" type="email"></ion-input>
+  </ion-item>
+  <div *ngIf="userForm.controls['email'].invalid && userForm.controls['email'].touched">
+    <ion-text color="danger">Por favor, ingresa un email válido.</ion-text>
+  </div>
+
+  <ion-button expand="full" type="submit" [disabled]="userForm.invalid">Guardar</ion-button>
+</form>

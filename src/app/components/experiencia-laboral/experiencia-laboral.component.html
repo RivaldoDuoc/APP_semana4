@@ -1,0 +1,47 @@
+<form [formGroup]="experienciaForm" (ngSubmit)="onSubmit()">
+  <ion-item>
+    <ion-label position="floating">Empresa</ion-label>
+    <ion-input formControlName="empresa"></ion-input>
+  </ion-item>
+  <div *ngIf="experienciaForm.controls['empresa'].invalid && experienciaForm.controls['empresa'].touched">
+    <ion-text color="danger">La empresa es requerida.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Año de Inicio</ion-label>
+    <ion-input formControlName="anoInicio" type="number"></ion-input>
+  </ion-item>
+  <div *ngIf="experienciaForm.controls['anoInicio'].invalid && experienciaForm.controls['anoInicio'].touched">
+    <ion-text color="danger">Año de inicio inválido.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Cargo</ion-label>
+    <ion-input formControlName="cargo"></ion-input>
+  </ion-item>
+  <div *ngIf="experienciaForm.controls['cargo'].invalid && experienciaForm.controls['cargo'].touched">
+    <ion-text color="danger">El cargo es requerido.</ion-text>
+  </div>
+
+  <ion-item>
+    <ion-label position="floating">Año de Término</ion-label>
+    <ion-input formControlName="anoTermino" type="number"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Actual</ion-label>
+    <ion-checkbox formControlName="actual"></ion-checkbox>
+  </ion-item>
+
+  <ion-button expand="full" type="submit" [disabled]="experienciaForm.invalid">Agregar Experiencia</ion-button>
+</form>
+
+<ion-list>
+  <ion-item *ngFor="let experiencia of experiencias">
+    <ion-label>
+      <h2>{{ experiencia.empresa }}</h2>
+      <p>{{ experiencia.cargo }} ({{ experiencia.ano_inicio }} - {{ experiencia.ano_termino || 'Presente' }})</p>
+    </ion-label>
+    <ion-button color="danger" (click)="deleteExperiencia(experiencia.id)">Eliminar</ion-button>
+  </ion-item>
+</ion-list>

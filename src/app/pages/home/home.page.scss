@@ -1,0 +1,30 @@
+ion-content {
+    padding: 16px;
+    background-color: var(--background-color);
+  }
+  
+  ion-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    padding: 16px;
+  }
+  
+  ion-card-header {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  ion-card-content {
+    color: var(--text-color);
+  }
+  
+  .segment {
+    ion-segment-button {
+      --background: #ffffff;
+      --color: var(--primary-color);
+      --indicator-color: var(--active-color);
+    }
+  }
+  

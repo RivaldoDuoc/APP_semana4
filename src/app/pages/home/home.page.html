@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Home</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Segmento para cambiar entre Experiencia Laboral, Certificaciones y Mis Datos -->
+  <ion-segment (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="experiencia">
+      Experiencia Laboral
+    </ion-segment-button>
+    <ion-segment-button value="certificaciones">
+      Certificaciones
+    </ion-segment-button>
+    <ion-segment-button value="datos">
+      Mis Datos
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Contenedor para cada sección según el segmento seleccionado -->
+  <ng-container *ngIf="selectedSegment === 'experiencia'">
+    <app-experiencia-laboral></app-experiencia-laboral>
+  </ng-container>
+  <ng-container *ngIf="selectedSegment === 'certificaciones'">
+    <app-certificaciones></app-certificaciones>
+  </ng-container>
+  <ng-container *ngIf="selectedSegment === 'datos'">
+    <app-mis-datos></app-mis-datos>
+  </ng-container>
+</ion-content>
