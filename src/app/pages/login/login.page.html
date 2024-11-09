@@ -18,5 +18,13 @@
 
     <ion-button expand="full" type="submit" [disabled]="loginForm.invalid">Ingresar</ion-button>
   </form>
+
+  <!-- Enlace para registrar un nuevo usuario -->
+  <ion-item lines="none">
+    <ion-label class="ion-text-center">
+      ¿No tienes una cuenta? 
+      <ion-button fill="clear" color="primary" (click)="goToRegister()">Registrar Usuario</ion-button>
+    </ion-label>
+  </ion-item>
 </ion-content>
 

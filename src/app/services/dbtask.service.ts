@@ -10,117 +10,162 @@ import { Storage } from '@ionic/storage-angular';
 export class DBTaskService {
   private dbInstance: SQLiteObject | undefined;
   private isDbReady = new BehaviorSubject<boolean>(false);
+  usersList = new BehaviorSubject<any[]>([]);
   experienciasList = new BehaviorSubject<any[]>([]);
+  certificacionesList = new BehaviorSubject<any[]>([]);
 
-  constructor(private sqlite: SQLite, private platform: Platform, private storage: Storage) {
+  constructor(
+    private sqlite: SQLite,
+    private platform: Platform,
+    private storage: Storage
+  ) {
     this.platform.ready().then(() => {
       this.sqlite.create({
         name: 'skeletonapp.db',
         location: 'default'
       }).then((db: SQLiteObject) => {
         this.dbInstance = db;
-        this.createTables();
+        this.createTables(); // Crear las tablas al inicializar la base de datos
       });
-      this.storage.create();
+      this.storage.create(); // Inicializar almacenamiento para la sesión de usuario
     });
   }
 
-  // Crear tablas necesarias en la base de datos
+  // Crear las tablas necesarias en la base de datos
   private createTables() {
     if (!this.dbInstance) {
       console.error("La base de datos no está inicializada.");
       return;
     }
 
-    // Tabla para la sesión del usuario
-    this.dbInstance.executeSql(`CREATE TABLE IF NOT EXISTS sesion_data (
-      user_name TEXT PRIMARY KEY,
-      password TEXT,
-      active INTEGER
-    );`, []).catch(e => console.error('Error creando tabla sesion_data', e));
+    // Tabla para usuarios
+    this.dbInstance.executeSql(`
+      CREATE TABLE IF NOT EXISTS sesion_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        nombre TEXT,
+        apellidos TEXT,
+        email TEXT,
+        edad INTEGER,
+        active INTEGER
+      );`, [])
+      .then(() => this.isDbReady.next(true))
+      .catch(e => console.error('Error creando tabla sesion_data', e));
 
     // Tabla para experiencia laboral
-    this.dbInstance.executeSql(`CREATE TABLE IF NOT EXISTS experiencia_laboral (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      empresa TEXT,
-      ano_inicio INTEGER,
-      cargo TEXT,
-      ano_termino INTEGER,
-      actual INTEGER
-    );`, []).catch(e => console.error('Error creando tabla experiencia_laboral', e));
+    this.dbInstance.executeSql(`
+      CREATE TABLE IF NOT EXISTS experiencia_laboral (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        empresa TEXT,
+        ano_inicio INTEGER,
+        cargo TEXT,
+        ano_termino INTEGER,
+        actual INTEGER
+      );`, [])
+      .then(() => this.isDbReady.next(true))
+      .catch(e => console.error('Error creando tabla experiencia_laboral', e));
 
     // Tabla para certificaciones
-    this.dbInstance.executeSql(`CREATE TABLE IF NOT EXISTS certificaciones (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT,
-      ano INTEGER
-    );`, []).then(() => this.isDbReady.next(true)).catch(e => console.error('Error creando tabla certificaciones', e));
+    this.dbInstance.executeSql(`
+      CREATE TABLE IF NOT EXISTS certificaciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        ano INTEGER
+      );`, [])
+      .then(() => this.isDbReady.next(true))
+      .catch(e => console.error('Error creando tabla certificaciones', e));
   }
 
-  // CRUD para sesion_data
-  addUser(user_name: string, password: string, active: number): Promise<void> {
+  // CRUD para Usuarios
+  addUser(username: string, password: string, active: number): Promise<void> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
-    const data = [user_name, password, active];
-    return this.dbInstance.executeSql(`INSERT INTO sesion_data (user_name, password, active) VALUES (?, ?, ?)`, data)
-      .catch(e => {
-        console.error('Error al agregar usuario', e);
-        throw e;
-      });
+    const data = [username, password, '', '', '', null, active];
+    return this.dbInstance.executeSql(
+      `INSERT INTO sesion_data (username, password, nombre, apellidos, email, edad, active) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      data
+    ).then(() => {
+      this.loadUsers();
+    }).catch(e => {
+      console.error('Error al agregar usuario', e);
+      throw e;
+    });
   }
 
-  getUser(user_name: string): Promise<any> {
+  getAllUsers(): Promise<any[]> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.resolve([]);
+    }
+    return this.dbInstance.executeSql(`SELECT * FROM sesion_data`, []).then(res => {
+      let users: any[] = [];
+      for (let i = 0; i < res.rows.length; i++) {
+        users.push(res.rows.item(i));
+      }
+      return users;
+    }).catch(e => {
+      console.error('Error obteniendo usuarios', e);
+      return [];
+    });
+  }
+
+  updateUser(id: number, username: string, password: string, nombre: string, apellidos: string, email: string, edad: number): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
-    return this.dbInstance.executeSql(`SELECT * FROM sesion_data WHERE user_name = ?`, [user_name])
-      .then(res => {
-        if (res.rows.length > 0) {
-          return {
-            user_name: res.rows.item(0).user_name,
-            password: res.rows.item(0).password,
-            active: res.rows.item(0).active
-          };
-        }
-        return null;
-      })
-      .catch(e => {
-        console.error('Error obteniendo usuario', e);
-        throw e;
-      });
+    const data = [username, password, nombre, apellidos, email, edad, id];
+    return this.dbInstance.executeSql(
+      `UPDATE sesion_data SET username = ?, password = ?, nombre = ?, apellidos = ?, email = ?, edad = ? WHERE id = ?`,
+      data
+    ).then(() => {
+      this.loadUsers();
+    }).catch(e => {
+      console.error('Error actualizando usuario', e);
+      throw e;
+    });
   }
 
-  updateUserStatus(user_name: string, active: number): Promise<void> {
+  deleteUser(id: number): Promise<void> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
-    return this.dbInstance.executeSql(`UPDATE sesion_data SET active = ? WHERE user_name = ?`, [active, user_name])
-      .catch(e => {
-        console.error('Error actualizando estado de usuario', e);
-        throw e;
-      });
+    return this.dbInstance.executeSql(
+      `DELETE FROM sesion_data WHERE id = ?`,
+      [id]
+    ).then(() => {
+      this.loadUsers();
+    }).catch(e => {
+      console.error('Error eliminando usuario', e);
+      throw e;
+    });
   }
 
-  deleteUser(user_name: string): Promise<void> {
-    if (!this.dbInstance) {
-      return Promise.reject("La base de datos no está inicializada.");
-    }
-    return this.dbInstance.executeSql(`DELETE FROM sesion_data WHERE user_name = ?`, [user_name])
-      .catch(e => {
-        console.error('Error eliminando usuario', e);
-        throw e;
-      });
+  private loadUsers() {
+    this.getAllUsers().then(users => {
+      this.usersList.next(users);
+    });
   }
 
-  // CRUD para experiencia_laboral
+  getUsers(): Observable<any[]> {
+    return this.usersList.asObservable();
+  }
+
+  // CRUD para Experiencia Laboral
   addExperiencia(empresa: string, ano_inicio: number, cargo: string, ano_termino: number | null, actual: number): Promise<void> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
     const data = [empresa, ano_inicio, cargo, ano_termino, actual];
-    return this.dbInstance.executeSql(`INSERT INTO experiencia_laboral (empresa, ano_inicio, cargo, ano_termino, actual) VALUES (?, ?, ?, ?, ?)`, data)
-      .then(() => this.loadExperiencias())
+    return this.dbInstance.executeSql(
+      `INSERT INTO experiencia_laboral (empresa, ano_inicio, cargo, ano_termino, actual) VALUES (?, ?, ?, ?, ?)`,
+      data
+    ).then(() => this.loadExperiencias())
       .catch(e => {
         console.error('Error agregando experiencia laboral', e);
         throw e;
@@ -129,45 +174,19 @@ export class DBTaskService {
 
   getAllExperiencia(): Promise<any[]> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.resolve([]);
     }
-    return this.dbInstance.executeSql(`SELECT * FROM experiencia_laboral`, [])
-      .then(res => {
-        let items: any[] = [];
-        for (let i = 0; i < res.rows.length; i++) {
-          items.push(res.rows.item(i));
-        }
-        return items;
-      })
-      .catch(e => {
-        console.error('Error obteniendo experiencias laborales', e);
-        return [];
-      });
-  }
-
-  updateExperiencia(id: number, empresa: string, ano_inicio: number, cargo: string, ano_termino: number | null, actual: number): Promise<void> {
-    if (!this.dbInstance) {
-      return Promise.reject("La base de datos no está inicializada.");
-    }
-    const data = [empresa, ano_inicio, cargo, ano_termino, actual, id];
-    return this.dbInstance.executeSql(`UPDATE experiencia_laboral SET empresa = ?, ano_inicio = ?, cargo = ?, ano_termino = ?, actual = ? WHERE id = ?`, data)
-      .then(() => this.loadExperiencias())
-      .catch(e => {
-        console.error('Error actualizando experiencia laboral', e);
-        throw e;
-      });
-  }
-
-  deleteExperiencia(id: number): Promise<void> {
-    if (!this.dbInstance) {
-      return Promise.reject("La base de datos no está inicializada.");
-    }
-    return this.dbInstance.executeSql(`DELETE FROM experiencia_laboral WHERE id = ?`, [id])
-      .then(() => this.loadExperiencias())
-      .catch(e => {
-        console.error('Error eliminando experiencia laboral', e);
-        throw e;
-      });
+    return this.dbInstance.executeSql(`SELECT * FROM experiencia_laboral`, []).then(res => {
+      let items: any[] = [];
+      for (let i = 0; i < res.rows.length; i++) {
+        items.push(res.rows.item(i));
+      }
+      return items;
+    }).catch(e => {
+      console.error('Error obteniendo experiencias laborales', e);
+      return [];
+    });
   }
 
   private loadExperiencias() {
@@ -180,51 +199,53 @@ export class DBTaskService {
     return this.experienciasList.asObservable();
   }
 
-  // CRUD para certificaciones
+  // CRUD para Certificaciones
   addCertificacion(nombre: string, ano: number): Promise<void> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
     const data = [nombre, ano];
-    return this.dbInstance.executeSql(`INSERT INTO certificaciones (nombre, ano) VALUES (?, ?)`, data)
+    return this.dbInstance.executeSql(
+      `INSERT INTO certificaciones (nombre, ano) VALUES (?, ?)`,
+      data
+    ).then(() => this.loadCertificaciones())
       .catch(e => {
-        console.error('Error al agregar certificación', e);
+        console.error('Error agregando certificación', e);
         throw e;
       });
   }
 
   getAllCertificaciones(): Promise<any[]> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.resolve([]);
     }
-    return this.dbInstance.executeSql(`SELECT * FROM certificaciones`, [])
-      .then(res => {
-        let items: any[] = [];
-        for (let i = 0; i < res.rows.length; i++) {
-          items.push(res.rows.item(i));
-        }
-        return items;
-      })
-      .catch(e => {
-        console.error('Error obteniendo certificaciones', e);
-        return [];
-      });
+    return this.dbInstance.executeSql(`SELECT * FROM certificaciones`, []).then(res => {
+      let items: any[] = [];
+      for (let i = 0; i < res.rows.length; i++) {
+        items.push(res.rows.item(i));
+      }
+      return items;
+    }).catch(e => {
+      console.error('Error obteniendo certificaciones', e);
+      return [];
+    });
   }
 
-  deleteCertificacion(id: number): Promise<void> {
-    if (!this.dbInstance) {
-      return Promise.reject("La base de datos no está inicializada.");
-    }
-    return this.dbInstance.executeSql(`DELETE FROM certificaciones WHERE id = ?`, [id])
-      .catch(e => {
-        console.error('Error eliminando certificación', e);
-        throw e;
-      });
+  private loadCertificaciones() {
+    this.getAllCertificaciones().then(items => {
+      this.certificacionesList.next(items);
+    });
+  }
+
+  getCertificaciones(): Observable<any[]> {
+    return this.certificacionesList.asObservable();
   }
 
   // Funciones de sesión
-  async setSession(user_name: string, password: string) {
-    await this.storage.set('user_name', user_name);
+  async setSession(username: string, password: string) {
+    await this.storage.set('username', username);
     await this.storage.set('password', password);
     await this.storage.set('active', 1);
   }
@@ -233,22 +254,60 @@ export class DBTaskService {
     await this.storage.clear();
   }
 
-  async isUserLoggedIn() {
-    return await this.storage.get('active') === 1;
+  async isUserLoggedIn(): Promise<boolean> {
+    return (await this.storage.get('active')) === 1;
   }
 
-  // Método para actualizar el perfil de usuario
-  updateUserProfile(user_name: string, nombre: string, apellidos: string, email: string, edad: number): Promise<void> {
+  // Método para obtener un usuario específico por username
+  getUser(username: string): Promise<any> {
     if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
       return Promise.reject("La base de datos no está inicializada.");
     }
-    const data = [nombre, apellidos, email, edad, user_name];
-    return this.dbInstance.executeSql(`UPDATE sesion_data SET nombre = ?, apellidos = ?, email = ?, edad = ? WHERE user_name = ?`, data)
+    return this.dbInstance.executeSql(`SELECT * FROM sesion_data WHERE username = ?`, [username])
+      .then(res => {
+        if (res.rows.length > 0) {
+          return res.rows.item(0); // Retorna el primer resultado encontrado
+        }
+        return null; // Retorna null si no encuentra el usuario
+      })
       .catch(e => {
-        console.error('Error actualizando perfil de usuario', e);
+        console.error('Error obteniendo usuario', e);
         throw e;
       });
   }
 
+  // Método para eliminar una certificación por ID
+  deleteCertificacion(id: number): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    return this.dbInstance.executeSql(
+      `DELETE FROM certificaciones WHERE id = ?`,
+      [id]
+    ).then(() => {
+      this.loadCertificaciones(); // Recargar certificaciones después de eliminar una
+    }).catch(e => {
+      console.error('Error eliminando certificación', e);
+      throw e;
+    });
+  }
 
+  // Método para eliminar una experiencia laboral por ID
+  deleteExperiencia(id: number): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    return this.dbInstance.executeSql(
+      `DELETE FROM experiencia_laboral WHERE id = ?`,
+      [id]
+    ).then(() => {
+      this.loadExperiencias(); // Recargar experiencias después de eliminar una
+    }).catch(e => {
+      console.error('Error eliminando experiencia laboral', e);
+      throw e;
+    });
+  }
 }

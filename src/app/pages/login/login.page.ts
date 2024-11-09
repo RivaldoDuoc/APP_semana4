@@ -37,4 +37,9 @@ export class LoginPage implements OnInit {
       }).catch(error => console.error('Error al iniciar sesión', error));
     }
   }
+
+  // Método para redirigir a la página de registro de usuario
+  goToRegister() {
+    this.router.navigate(['/user-management']);
+  }
 }
