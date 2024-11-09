@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DBTaskService } from 'src/app/services/dbtask.service';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
+
 
 @Component({
   selector: 'app-user-management',
@@ -16,7 +19,8 @@ export class UserManagementPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dbService: DBTaskService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     // Inicializar el formulario de usuario con validaciones y confirmación de contraseña
     this.userForm = this.fb.group({
@@ -96,11 +100,20 @@ export class UserManagementPage implements OnInit {
     });
   }
 
-  // Eliminar un usuario
+  // Eliminar un usuario con confirmación
   onDelete(userId: number) {
-    this.dbService.deleteUser(userId).then(() => {
-      this.loadUsers();
-    }).catch(error => console.error('Error eliminando usuario', error));
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '250px',
+      data: { message: '¿Estás seguro de que deseas eliminar este usuario?' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.dbService.deleteUser(userId).then(() => {
+          this.loadUsers(); // Recargar la lista de usuarios después de eliminar
+        }).catch(error => console.error('Error eliminando usuario', error));
+      }
+    });
   }
 
   // Cerrar sesión

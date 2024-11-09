@@ -95,3 +95,31 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
   
+  .lista-item {
+    font-size: 1rem; /* Tamaño de texto para la lista */
+    padding: 10px 0;
+  }
+  
+  .botones-crud {
+    font-size: 0.9rem; /* Tamaño de texto en botones */
+    margin: 0 5px;
+  }
+  
+  ion-label h2 {
+    font-size: 1.2rem; /* Ajuste de tamaño para nombres de usuario */
+    font-weight: bold;
+    color: #333;
+  }
+  
+  ion-label p {
+    font-size: 0.9rem; /* Ajuste para correos electrónicos o detalles */
+    color: #666;
+  }
+  
+  ion-button {
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+  }
+  

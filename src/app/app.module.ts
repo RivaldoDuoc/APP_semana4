@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 // Importar SQLite y IonicStorageModule
 import { SQLite } from '@awesome-cordova-plugins/sqlite/ngx';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 @NgModule({
   declarations: [AppComponent],
@@ -23,7 +24,8 @@ import { IonicStorageModule } from '@ionic/storage-angular';
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     // Agregar SQLite como proveedor
-    SQLite
+    SQLite,
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent],
 })

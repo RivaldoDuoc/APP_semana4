@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DBTaskService } from 'src/app/services/dbtask.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-mis-datos',
@@ -10,8 +12,14 @@ import { DBTaskService } from 'src/app/services/dbtask.service';
 export class MisDatosComponent implements OnInit {
   userForm: FormGroup;
   userData: any = null; // Datos del usuario cargado
+  datosUsuario: any[] = []; // Lista de datos del usuario
+  selectedUserId: number | null = null; // ID del usuario seleccionado para edición
 
-  constructor(private fb: FormBuilder, private dbService: DBTaskService) {
+  constructor(
+    private fb: FormBuilder,
+    private dbService: DBTaskService,
+    private dialog: MatDialog
+  ) {
     // Inicializar el formulario con validaciones
     this.userForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -23,6 +31,7 @@ export class MisDatosComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserData(); // Cargar datos del usuario al iniciar
+    this.loadDatosUsuario(); // Cargar lista de datos de usuarios
   }
 
   // Función para cargar los datos del usuario desde SQLite
@@ -40,11 +49,18 @@ export class MisDatosComponent implements OnInit {
     }).catch(error => console.error('Error cargando datos del usuario', error));
   }
 
+  // Cargar la lista de datos del usuario
+  loadDatosUsuario() {
+    this.dbService.getAllUsers().then(users => {
+      this.datosUsuario = users;
+    }).catch(error => console.error('Error cargando lista de datos del usuario', error));
+  }
+
   // Función para guardar o actualizar los datos del usuario
   onSubmit() {
     if (this.userForm.valid) {
       const formData = this.userForm.value;
-  
+
       if (this.userData) {
         // Actualizar usuario existente
         this.dbService.updateUser(
@@ -57,7 +73,9 @@ export class MisDatosComponent implements OnInit {
           formData.edad               // Nueva edad
         ).then(() => {
           this.loadUserData();        // Recargar datos después de actualizar
+          this.loadDatosUsuario();     // Recargar la lista de datos
           this.userForm.reset();
+          this.selectedUserId = null;
         }).catch(error => console.error('Error actualizando datos del usuario', error));
       } else {
         // Crear nuevo usuario si no existe userData
@@ -67,14 +85,39 @@ export class MisDatosComponent implements OnInit {
           1                           // Estado activo del usuario
         ).then(() => {
           this.loadUserData();        // Recargar datos después de agregar
+          this.loadDatosUsuario();     // Recargar la lista de datos
         }).catch(error => console.error('Error agregando datos del usuario', error));
       }
     } else {
       console.log('Formulario inválido');
     }
   }
-  
-  
-  
-  
+
+  // Seleccionar usuario para editar y cargar datos en el formulario
+  onEdit(user: any) {
+    this.selectedUserId = user.id;
+    this.userData = user; // Guardar datos completos del usuario seleccionado
+    this.userForm.patchValue({
+      nombre: user.nombre,
+      apellidos: user.apellidos,
+      edad: user.edad,
+      email: user.email
+    });
+  }
+
+  // Eliminar usuario con confirmación
+  onDelete(userId: number) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '250px',
+      data: { message: '¿Estás seguro de que deseas eliminar este usuario?' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.dbService.deleteUser(userId).then(() => {
+          this.loadDatosUsuario(); // Recargar la lista de usuarios después de eliminar
+        }).catch(error => console.error('Error eliminando usuario', error));
+      }
+    });
+  }
 }

@@ -4,52 +4,47 @@
       <ion-label position="floating">Nombre</ion-label>
       <ion-input formControlName="nombre"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.controls['nombre'].invalid && userForm.controls['nombre'].touched">
-      <ion-text color="danger">El nombre es requerido.</ion-text>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.controls['nombre'].invalid && userForm.controls['nombre'].touched">
+      <p>El nombre es requerido.</p>
+    </ion-text>
 
     <ion-item>
       <ion-label position="floating">Apellidos</ion-label>
       <ion-input formControlName="apellidos"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.controls['apellidos'].invalid && userForm.controls['apellidos'].touched">
-      <ion-text color="danger">Los apellidos son requeridos.</ion-text>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.controls['apellidos'].invalid && userForm.controls['apellidos'].touched">
+      <p>Los apellidos son requeridos.</p>
+    </ion-text>
 
     <ion-item>
       <ion-label position="floating">Edad</ion-label>
       <ion-input formControlName="edad" type="number"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.controls['edad'].invalid && userForm.controls['edad'].touched">
-      <ion-text color="danger">La edad debe ser entre 1 y 120.</ion-text>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.controls['edad'].invalid && userForm.controls['edad'].touched">
+      <p>La edad debe ser entre 1 y 120.</p>
+    </ion-text>
 
     <ion-item>
       <ion-label position="floating">Email</ion-label>
       <ion-input formControlName="email" type="email"></ion-input>
     </ion-item>
-    <div *ngIf="userForm.controls['email'].invalid && userForm.controls['email'].touched">
-      <ion-text color="danger">Por favor, ingresa un email válido.</ion-text>
-    </div>
+    <ion-text color="danger" *ngIf="userForm.controls['email'].invalid && userForm.controls['email'].touched">
+      <p>Por favor, ingresa un email válido.</p>
+    </ion-text>
 
     <ion-button expand="full" type="submit" [disabled]="userForm.invalid">
       {{ selectedUserId ? 'Actualizar' : 'Guardar' }}
     </ion-button>
   </form>
 
-  <!-- Lista de usuarios con opciones de editar y eliminar -->
-  <ion-list *ngIf="users.length > 0">
-    <ion-item *ngFor="let user of users">
+  <ion-list *ngIf="datosUsuario && datosUsuario.length > 0">
+    <ion-item class="lista-item" *ngFor="let dato of datosUsuario">
       <ion-label>
-        <h2>{{ user.nombre }} {{ user.apellidos }}</h2>
-        <p>{{ user.email }} - {{ user.edad }} años</p>
+        <h2>{{ dato.username }}</h2>
+        <p>{{ dato.email }}</p>
       </ion-label>
-      <ion-button fill="clear" color="primary" (click)="onEdit(user)">
-        Editar
-      </ion-button>
-      <ion-button fill="clear" color="danger" (click)="onDelete(user.id)">
-        Eliminar
-      </ion-button>
+      <ion-button class="botones-crud" fill="clear" (click)="onEdit(dato)">Editar</ion-button>
+      <ion-button class="botones-crud" fill="clear" color="danger" (click)="onDelete(dato.id)">Eliminar</ion-button>
     </ion-item>
   </ion-list>
 </ion-content>

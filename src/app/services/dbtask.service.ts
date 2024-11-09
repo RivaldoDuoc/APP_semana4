@@ -368,7 +368,42 @@ export class DBTaskService {
       throw e;
     });
   }
+  // Método para actualizar una experiencia laboral por ID
+  updateExperiencia(id: number, empresa: string, ano_inicio: number, cargo: string, ano_termino: number | null, actual: number): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    const data = [empresa, ano_inicio, cargo, ano_termino, actual, id];
+    return this.dbInstance.executeSql(
+      `UPDATE experiencia_laboral SET empresa = ?, ano_inicio = ?, cargo = ?, ano_termino = ?, actual = ? WHERE id = ?`,
+      data
+    ).then(() => {
+      this.loadExperiencias(); // Recargar la lista de experiencias después de actualizar una
+    }).catch(e => {
+      console.error('Error actualizando experiencia laboral', e);
+      throw e;
+    });
+  }
 
+  // Método para actualizar una certificación por ID
+  updateCertificacion(id: number, nombre: string, ano: number): Promise<void> {
+    if (!this.dbInstance) {
+      console.error("La base de datos no está inicializada.");
+      return Promise.reject("La base de datos no está inicializada.");
+    }
+    const data = [nombre, ano, id];
+    return this.dbInstance.executeSql(
+      `UPDATE certificaciones SET nombre = ?, ano = ? WHERE id = ?`,
+      data
+    ).then(() => {
+      this.loadCertificaciones(); // Recargar la lista de certificaciones después de actualizar una
+    }).catch(e => {
+      console.error('Error actualizando certificación', e);
+      throw e;
+    });
+  }
 
-
+  
+  
 }
